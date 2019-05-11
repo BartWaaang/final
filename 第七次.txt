@@ -1,0 +1,112 @@
+#include<opencv2/opencv.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<math.h>
+#include<stdio.h>
+#include<iostream>
+using namespace cv;
+using namespace std;
+
+void sobel(Mat src, Mat grad_x, Mat grad_y, Mat abs_grad_x, Mat abs_grad_y, Mat &dst)
+{
+	Sobel(src, grad_x, CV_16S, 1, 0, 3, 1, 1, BORDER_DEFAULT);
+	convertScaleAbs(grad_x, abs_grad_x);
+	Sobel(src, grad_y, CV_16S, 0, 1, 3, 1, 1, BORDER_DEFAULT);
+	convertScaleAbs(grad_y, abs_grad_y);
+	addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, dst);
+	threshold(dst, dst, 90, 255, 0);
+}
+
+void lap(Mat src, Mat &dst)
+{
+	Laplacian(src, dst, CV_16S, 3, 1, 0, BORDER_DEFAULT);
+	convertScaleAbs(dst, dst);
+	threshold(dst, dst, 30, 255, 0);
+}
+
+void hough(Mat edge, Mat &dst,int threshold)
+{
+	cvtColor(edge, dst, CV_GRAY2BGR);
+	vector<Vec2f> lines;
+	HoughLines(edge, lines, 1, CV_PI / 180, threshold, 0, 0);
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		float rho = lines[i][0];
+		float theta = lines[i][1];
+		Point pt1, pt2;
+		double a = cos(theta), b = sin(theta);
+		double x0 = a * rho, y0 = b * rho;
+		pt1.x = cvRound(x0 + 1000 * (-b));
+		pt1.y = cvRound(y0 + 1000 * (a));
+		pt2.x = cvRound(x0 - 1000 * (-b));
+		pt2.y = cvRound(y0 - 1000 * (a));
+		line(dst, pt1, pt2, Scalar(0, 0, 255), 1, CV_AA);
+	}
+	imshow("1", dst);
+}
+
+
+int main()
+{
+	Mat src1 = imread("E:\\课件\\图像\\作业-直线检测\\test1.tif", IMREAD_GRAYSCALE);
+	Mat src2 = imread("E:\\课件\\图像\\作业-直线检测\\test2.png", IMREAD_GRAYSCALE);
+	Mat src3 = imread("E:\\课件\\图像\\作业-直线检测\\test3.jpg", IMREAD_GRAYSCALE);
+	Mat src4 = imread("E:\\课件\\图像\\作业-直线检测\\test4.bmp", IMREAD_GRAYSCALE);
+	Mat src5 = imread("E:\\课件\\图像\\作业-直线检测\\test5.png", IMREAD_GRAYSCALE);
+	Mat src6 = imread("E:\\课件\\图像\\作业-直线检测\\test6.jpg", IMREAD_GRAYSCALE);
+	Mat can1, can2, can3, can4, can5, can6;
+	Mat sob1, sob2, sob3, sob4, sob5, sob6;
+	Mat lap1, lap2, lap3, lap4, lap5, lap6;
+	Canny(src1, can1, 80, 100, 3);
+	Canny(src2, can2, 10, 80, 3);
+	Canny(src3, can3, 10, 80, 3);
+	Canny(src4, can4, 10, 80, 3);
+	Canny(src5, can5, 10, 80, 3);
+	Canny(src6, can6, 10, 80, 3);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\can1.bmp", can1);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\can2.bmp", can2);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\can3.bmp", can3);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\can4.bmp", can4);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\can5.bmp", can5);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\can6.bmp", can6);
+
+	Mat grad_x1, grad_x2, grad_x3, grad_x4, grad_x5, grad_x6;
+	Mat grad_y1, grad_y2, grad_y3, grad_y4, grad_y5, grad_y6;
+	Mat abs_grad_x1, abs_grad_x2, abs_grad_x3, abs_grad_x4, abs_grad_x5, abs_grad_x6;
+	Mat abs_grad_y1, abs_grad_y2, abs_grad_y3, abs_grad_y4, abs_grad_y5, abs_grad_y6;
+	sobel(src1, grad_x1, grad_y1, abs_grad_x1, abs_grad_y1, sob1);
+	sobel(src2, grad_x2, grad_y2, abs_grad_x2, abs_grad_y2, sob2);
+	sobel(src3, grad_x3, grad_y3, abs_grad_x3, abs_grad_y3, sob3);
+	sobel(src4, grad_x4, grad_y4, abs_grad_x4, abs_grad_y4, sob4);
+	sobel(src5, grad_x5, grad_y5, abs_grad_x5, abs_grad_y5, sob5);
+	sobel(src6, grad_x6, grad_y6, abs_grad_x6, abs_grad_y6, sob6);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\sob1.bmp", sob1);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\sob2.bmp", sob2);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\sob3.bmp", sob3);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\sob4.bmp", sob4);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\sob5.bmp", sob5);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\sob6.bmp", sob6);
+
+
+	lap(src1, lap1);
+	lap(src2, lap2);
+	lap(src3, lap3);
+	lap(src4, lap4);
+	lap(src5, lap5);
+	lap(src6, lap6);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\lap1.bmp", lap1);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\lap2.bmp", lap2);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\lap3.bmp", lap3);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\lap4.bmp", lap4);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\lap5.bmp", lap5);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\lap6.bmp", lap6);
+
+
+
+	Mat dst;
+	hough(sob4, dst,150);
+	imwrite("E:\\课件\\图像\\作业-直线检测\\结果\\edge42.bmp", dst);
+
+	waitKey(0);
+	return 0;
+
+}
